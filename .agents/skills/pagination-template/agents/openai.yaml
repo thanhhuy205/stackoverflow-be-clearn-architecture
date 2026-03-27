@@ -1,0 +1,7 @@
+interface:
+  display_name: Pagination Template
+  short_description: Express + MySQL pagination convention
+policy:
+  products:
+  - chatgpt
+  allow_implicit_invocation: true
