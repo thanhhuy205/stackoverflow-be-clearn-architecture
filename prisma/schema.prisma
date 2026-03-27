@@ -5,3 +5,194 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum UserRole {
+  USER 
+  ADMIN
+}
+
+enum VerificationCodeType {
+  FORGOT_PASSWORD
+  RESET_PASSWORD
+  VERIFY_ACCOUNT
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+  DEACTIVATED
+}
+
+model User {
+  id        Int        @id @default(autoincrement())
+  email     String     @unique @db.VarChar(255)
+  username  String     @unique @db.VarChar(100)
+  password  String     @db.VarChar(255)
+
+  firstName String?    @map("first_name") @db.VarChar(100)
+  lastName  String?    @map("last_name") @db.VarChar(100)
+  bio       String?    @db.Text
+  avatar    String?    @db.VarChar(255)
+
+  role       UserRole   @default(USER)
+  status     UserStatus @default(ACTIVE)
+  verifiedAt DateTime?  @map("verified_at")
+
+  questionsCount Int @default(0) @map("questions_count")
+
+  deletedAt DateTime? @map("deleted_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  lastLoginAt DateTime? @map("last_login_at")
+
+  questions         Question[]
+  answers           Answer[]
+  comments          Comment[]
+  refreshTokens     RefreshToken[]
+  verificationCodes VerificationCode[]
+  votes             Vote[]
+
+  @@index([deletedAt], map: "idx_users_deleted_at")
+  @@map("users")
+}
+
+model VerificationCode {
+  id        Int                  @id @default(autoincrement())
+  userId    Int                  @map("user_id")
+  type      VerificationCodeType
+  code      String               @db.VarChar(100)
+  expiresAt DateTime             @map("expires_at")
+  usedAt    DateTime?            @map("used_at")
+  createdAt DateTime             @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, type, createdAt], map: "idx_verification_codes_user_type_created")
+  @@index([expiresAt], map: "idx_verification_codes_expires_at")
+  @@index([usedAt], map: "idx_verification_codes_used_at")
+  @@map("verification_codes")
+}
+
+model Question {
+  id       Int    @id @default(autoincrement())
+  publicId String @unique @default(cuid()) @map("public_id")
+
+  userId  Int    @map("user_id")
+  content String @db.Text
+
+  answersCount  Int @default(0) @map("answers_count")
+
+  isDeleted Boolean   @default(false) @map("is_deleted")
+  deletedAt DateTime? @map("deleted_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user     User      @relation(fields: [userId], references: [id])
+  answers  Answer[]
+  comments Comment[]
+
+  @@index([userId, createdAt], map: "idx_questions_user_created_at")
+  @@index([createdAt], map: "idx_questions_created_at")
+  @@map("questions")
+}
+
+model Answer {
+  id       Int    @id @default(autoincrement())
+  publicId String @unique @default(cuid()) @map("public_id")
+
+  questionId Int    @map("question_id")
+  userId     Int    @map("user_id")
+  content    String @db.Text
+
+  isAnswer   Boolean @default(true) @map("is_answer")
+  isAccepted Boolean @default(false) @map("is_accepted")
+
+  votedCount    Int @default(0) @map("voted_count")
+  commentsCount Int @default(0) @map("comments_count")
+
+  isDeleted Boolean   @default(false) @map("is_deleted")
+  deletedAt DateTime? @map("deleted_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  question Question  @relation(fields: [questionId], references: [id])
+  user     User      @relation(fields: [userId], references: [id])
+  comments Comment[]
+  votes    Vote[]
+
+  @@index([questionId, createdAt], map: "idx_answers_question_created_at")
+  @@index([userId, createdAt], map: "idx_answers_user_created_at")
+  @@index([isAccepted], map: "idx_answers_is_accepted")
+  @@map("answers")
+}
+
+model Vote {
+  id       Int      @id @default(autoincrement())
+  userId   Int      @map("user_id")
+  answerId Int      @map("answer_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user   User   @relation(fields: [userId], references: [id])
+  answer Answer @relation(fields: [answerId], references: [id])
+
+  @@unique([userId, answerId], map: "uq_votes_user_answer")
+  @@index([answerId], map: "idx_votes_answer_id")
+  @@index([userId], map: "idx_votes_user_id")
+  @@map("votes")
+}
+
+model Comment {
+  id       Int    @id @default(autoincrement())
+  publicId String @unique @default(cuid()) @map("public_id")
+
+  userId     Int  @map("user_id")
+  questionId Int? @map("question_id")
+  answerId   Int? @map("answer_id")
+  parentId   Int? @map("parent_id")
+
+  content String @db.Text
+
+  isNested Boolean @default(false) @map("is_nested")
+
+  isDeleted Boolean   @default(false) @map("is_deleted")
+  deletedAt DateTime? @map("deleted_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user     User      @relation(fields: [userId], references: [id])
+  question Question? @relation(fields: [questionId], references: [id])
+  answer   Answer?   @relation(fields: [answerId], references: [id])
+
+  parent   Comment?  @relation("CommentParent", fields: [parentId], references: [id])
+  children Comment[] @relation("CommentParent")
+
+  @@index([questionId, createdAt], map: "idx_comments_question_created_at")
+  @@index([answerId, createdAt], map: "idx_comments_answer_created_at")
+  @@index([parentId], map: "idx_comments_parent_id")
+  @@index([userId, createdAt], map: "idx_comments_user_created_at")
+  @@map("comments")
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  hashToken String   @unique @map("hash_token") @db.VarChar(512)
+  expiresAt DateTime @map("expires_at")
+
+  revoked   Boolean   @default(false)
+  revokedAt DateTime? @map("revoked_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id])
+  @@index([userId], map: "idx_refresh_tokens_user_id")
+  @@index([expiresAt], map: "idx_refresh_tokens_expires_at")
+  @@map("refresh_tokens")
+}
