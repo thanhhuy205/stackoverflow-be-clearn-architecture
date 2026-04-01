@@ -3,10 +3,9 @@ import { PrismaUserRepository } from "@/modules/auth/application/infrastructure/
 import { AuthController } from "@/modules/auth/application/interface-adapters/http/auth.controller";
 import { AuthPresenter } from "@/modules/auth/application/interface-adapters/presenters/auth.presenter";
 import { RegisterUseCase } from "@/modules/auth/application/use-cases/register.use-case";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/shared/infrastructure/prisma/prisma.client";
 
 export const buildContainer = () => {
-    const prisma = new PrismaClient();
     const userRepository = new PrismaUserRepository(prisma);
     const passwordHasher = new BcryptPasswordHasher(10);
 

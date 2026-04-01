@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "ESNext", // CJS-compatible output with modern package export resolution
+    "module": "CommonJS", // CJS-compatible output with modern package export resolution
     "moduleResolution": "bundler", // Required for Prisma 7 type resolution
     "target": "ES2023", // Target output cho code
     "outDir": "dist", // Đường dẫn output cho thư mục build
