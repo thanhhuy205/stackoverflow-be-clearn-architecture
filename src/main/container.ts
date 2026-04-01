@@ -2,6 +2,7 @@ import { BcryptPasswordHasher } from "@/modules/auth/application/infrastructure/
 import { PrismaUserRepository } from "@/modules/auth/application/infrastructure/persistence/prisma-user.repository";
 import { AuthController } from "@/modules/auth/application/interface-adapters/http/auth.controller";
 import { AuthPresenter } from "@/modules/auth/application/interface-adapters/presenters/auth.presenter";
+import { LoginUseCase } from "@/modules/auth/application/use-cases/login.use-case";
 import { RegisterUseCase } from "@/modules/auth/application/use-cases/register.use-case";
 import { prisma } from "@/shared/infrastructure/prisma/prisma.client";
 
@@ -10,9 +11,10 @@ export const buildContainer = () => {
     const passwordHasher = new BcryptPasswordHasher(10);
 
     const registerUseCase = new RegisterUseCase(userRepository, passwordHasher);
+    const loginUserCase = new LoginUseCase(userRepository, passwordHasher);
 
     const authPresenter = new AuthPresenter();
-    const authController = new AuthController(registerUseCase, authPresenter);
+    const authController = new AuthController(registerUseCase, loginUserCase, authPresenter);
 
     return { authController };
 };

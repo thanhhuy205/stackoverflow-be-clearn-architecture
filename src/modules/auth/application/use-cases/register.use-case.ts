@@ -1,7 +1,12 @@
 import { RegisterInput } from "@/modules/auth/application/dto/register.input";
 import { PasswordHasher } from "@/modules/auth/application/ports/password-hasher";
 import { UserRepository } from "@/modules/auth/application/ports/user.repository";
+import { EmailAlreadyUsedError } from "@/modules/auth/domain/errors/email-already-used.error";
+import { FirstNameRequiredError } from "@/modules/auth/domain/errors/first-name-required.error";
+import { LastNameRequiredError } from "@/modules/auth/domain/errors/last-name-required.error";
+import { PasswordConfirmationMismatchError } from "@/modules/auth/domain/errors/password-confirmation-mismatch.error";
 import { Email } from "@/modules/auth/domain/values-object/emai.vo";
+import { Password } from "@/modules/auth/domain/values-object/password.vo";
 
 
 export type RegisterOutput = {
@@ -23,31 +28,27 @@ export class RegisterUseCase {
         const email = Email.create(input.email);
         const firstName = input.firstName.trim();
         const lastName = input.lastName.trim();
-        const password = input.password;
+        const password = Password.create(input.password);
         const confirmPassword = input.confirmPassword;
 
         if (!firstName) {
-            throw new Error('firstName is required');
+            throw new FirstNameRequiredError();
         }
 
         if (!lastName) {
-            throw new Error('lastName is required');
+            throw new LastNameRequiredError();
         }
 
-        if (!password || password.length < 6) {
-            throw new Error('Password must be at least 6 characters');
-        }
-
-        if (password != confirmPassword) {
-            throw new Error('Password must equal confirmPassword');
+        if (password.value != confirmPassword) {
+            throw new PasswordConfirmationMismatchError();
         }
 
         const existingUser = await this.userRepository.findByEmail(email);
         if (existingUser) {
-            throw new Error('Email already exists');
+            throw new EmailAlreadyUsedError();
         }
 
-        const passwordHash = await this.passwordHasher.hash(password);
+        const passwordHash = await this.passwordHasher.hash(password.value);
 
         const user = await this.userRepository.create({
             email: email,

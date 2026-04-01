@@ -6,4 +6,8 @@ export class BcryptPasswordHasher implements PasswordHasher {
     hash(value: string): Promise<string> {
         return bcrypt.hash(value, this.saltRounds);
     }
+
+    compare(pass: string, hash: string): Promise<Boolean> {
+        return bcrypt.compare(pass, hash)
+    }
 }
