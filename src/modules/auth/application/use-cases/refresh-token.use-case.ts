@@ -86,6 +86,7 @@ export class RefreshTokenUseCase {
 
         const nextRefreshToken = await this.tokenService.signRefreshToken();
         const nextSessionId = crypto.randomUUID();
+
         const nextHashToken = await this.refreshTokenHasher.hash(nextRefreshToken);
         const nextExpiresAt = this.buildRefreshTokenExpiresAt(new Date());
 
@@ -97,9 +98,10 @@ export class RefreshTokenUseCase {
         };
 
         const nextSessionRecord = await this.refreshTokenRepository.create(createData);
+
         const accessToken = await this.tokenService.signAccessToken({
             userId: nextSessionRecord.userId,
-            role: [],
+            role: oldSessionRecord.user.role,
             sessionId: nextSessionRecord.sessionId,
         });
 

@@ -2,6 +2,7 @@ import {
     CreateRefreshTokenData,
     RefreshTokenRecord,
     RefreshTokenRepository,
+    RefreshTokenWithUser,
 } from "@/modules/auth/application/ports/refresh-token.repository";
 import { PrismaClient, RefreshToken } from "@prisma/client";
 
@@ -21,13 +22,35 @@ export class PrismaRefreshSessionRepository implements RefreshTokenRepository {
         return this.toRecord(refreshToken);
     }
 
-    async findByTokenHash(hashToken: string): Promise<RefreshTokenRecord | null> {
+    async findByTokenHash(hashToken: string): Promise<RefreshTokenWithUser | null> {
         const refreshToken = await this.prisma.refreshToken.findUnique({
             where: { hashToken },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        role: true
+                    }
+                }
+            }
         });
 
         if (!refreshToken) return null;
-        return this.toRecord(refreshToken);
+
+        return {
+            userId: refreshToken.userId,
+            expiresAt: refreshToken.expiresAt,
+            hashToken: refreshToken.hashToken,
+            sessionId: refreshToken.sessionId,
+            revoked: refreshToken.revoked,
+            revokedAt: refreshToken.revokedAt,
+            createdAt: refreshToken.createdAt,
+            updatedAt: refreshToken.updatedAt,
+            user: {
+                id: refreshToken.user.id,
+                role: refreshToken.user.role
+            }
+        };
     }
 
     async revokeBySessionId(sessionId: string): Promise<void> {
@@ -52,4 +75,6 @@ export class PrismaRefreshSessionRepository implements RefreshTokenRepository {
             updatedAt: refreshToken.updatedAt,
         };
     }
+
+
 }

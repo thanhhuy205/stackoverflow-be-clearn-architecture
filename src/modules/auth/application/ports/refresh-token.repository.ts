@@ -16,8 +16,15 @@ export type RefreshTokenRecord = {
     updatedAt: Date;
 };
 
+export type RefreshTokenUserRecord = {
+    id: number,
+    role: string[]
+}
+
+export type RefreshTokenWithUser = RefreshTokenRecord & { user: RefreshTokenUserRecord };
+
 export interface RefreshTokenRepository {
     create(data: CreateRefreshTokenData): Promise<RefreshTokenRecord>;
-    findByTokenHash(hashToken: string): Promise<RefreshTokenRecord | null>;
+    findByTokenHash(hashToken: string): Promise<RefreshTokenWithUser | null>;
     revokeBySessionId(sessionId: string): Promise<void>;
 }
