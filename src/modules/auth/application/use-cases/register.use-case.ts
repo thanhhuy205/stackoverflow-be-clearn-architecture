@@ -5,6 +5,8 @@ import { UserRepository } from "@/modules/auth/application/ports/user.repository
 
 export type RegisterOutput = {
     id: number;
+    bio: string;
+    avatar: string;
     email: string;
     firstName: string;
     lastName: string;
@@ -57,6 +59,8 @@ export class RegisterUseCase {
         })
         return {
             id: user.id,
+            bio: user.bio,
+            avatar: user.avatar,
             email: user.email,
             firstName: user.firstName,
             lastName: user.lastName,

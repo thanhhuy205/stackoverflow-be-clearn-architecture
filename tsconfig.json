@@ -14,7 +14,7 @@
       "@/*": ["src/*"] // Đường dẫn tương đối cho các import (alias)
     }
   },
-  "files": ["src/types/express/type.d.ts"], // Các file dùng để defined global type cho dự án
+  "files": ["./src/types/express/type.d.ts"], // Các file dùng để defined global type cho dự án
   "include": ["src/**/*"], // Đường dẫn include cho các file cần build
   "exclude": ["node_modules", "dist"] // Loại trừ các thư mục không cần compile
 }
