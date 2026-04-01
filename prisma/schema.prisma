@@ -183,7 +183,7 @@ model RefreshToken {
   userId    Int      @map("user_id")
   hashToken String   @unique @map("hash_token") @db.VarChar(512)
   expiresAt DateTime @map("expires_at")
-
+  sessionId String   @unique @map("session_id") @db.VarChar(512)
   revoked   Boolean   @default(false)
   revokedAt DateTime? @map("revoked_at")
 

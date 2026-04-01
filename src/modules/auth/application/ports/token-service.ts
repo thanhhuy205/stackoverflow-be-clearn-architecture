@@ -1,4 +1,4 @@
 export interface TokenService {
-    signAccessToken(payload: { userId: string, role: string, sessionId: string }): Promise<string>;
+    signAccessToken(payload: { userId: number, role: string[], sessionId: string }): Promise<string>;
     signRefreshToken(): Promise<string>;
 }

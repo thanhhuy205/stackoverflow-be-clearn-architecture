@@ -5,7 +5,7 @@ import { EmailAlreadyUsedError } from "@/modules/auth/domain/errors/email-alread
 import { FirstNameRequiredError } from "@/modules/auth/domain/errors/first-name-required.error";
 import { LastNameRequiredError } from "@/modules/auth/domain/errors/last-name-required.error";
 import { PasswordConfirmationMismatchError } from "@/modules/auth/domain/errors/password-confirmation-mismatch.error";
-import { Email } from "@/modules/auth/domain/values-object/emai.vo";
+import { Email } from "@/modules/auth/domain/values-object/email.vo";
 import { Password } from "@/modules/auth/domain/values-object/password.vo";
 
 

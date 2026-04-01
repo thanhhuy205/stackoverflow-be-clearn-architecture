@@ -1,4 +1,4 @@
-import { Email } from "@/modules/auth/domain/values-object/emai.vo";
+import { Email } from "@/modules/auth/domain/values-object/email.vo";
 
 export type CreateUserData = {
     firstName: string;
@@ -15,6 +15,7 @@ export type UserRecord = {
     firstName: string;
     lastName: string;
     password: string;
+    role: string[];
     createdAt: Date;
     updatedAt: Date;
 }
