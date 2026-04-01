@@ -1,22 +1,23 @@
+import { buildContainer } from '@/main/container';
+import { createRoutes } from '@/main/routes';
 import { errorMiddleware } from '@/shared/interface-adapters/http/error-handler.midleware';
 import { responseMiddleware } from '@/shared/interface-adapters/http/response-handler.middleware';
 import express, { Express } from 'express';
 
 
-const app: Express = express();
-app.use(responseMiddleware);
+export const createApp = () => {
+    const app: Express = express();
+    app.use(express.json({ limit: '10mb' }));
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
+    app.use(responseMiddleware);
 
-app.get('/health', (req, res) => {
-    res.success({ status: 'healthy' });
-});
+    app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-// 404 handler
-app.use((req, res) => {
-    res.error('Route not found', 404, 'NOT_FOUND');
-});
+    app.use("/api", createRoutes(buildContainer()));
 
-app.use(errorMiddleware);
-export default app; 
+    app.use((req, res) => {
+        res.error('Route not found', 404, 'NOT_FOUND');
+    });
+    app.use(errorMiddleware);
+    return app;
+}
