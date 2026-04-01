@@ -1,3 +1,4 @@
+
 export type RegisterInput = {
     firstName: string;
     lastName: string;

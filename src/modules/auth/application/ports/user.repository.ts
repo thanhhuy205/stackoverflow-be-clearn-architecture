@@ -1,7 +1,9 @@
+import { Email } from "@/modules/auth/domain/values-object/emai.vo";
+
 export type CreateUserData = {
     firstName: string;
     lastName: string;
-    email: string;
+    email: Email;
     password: string;
 }
 
@@ -19,5 +21,5 @@ export type UserRecord = {
 
 export interface UserRepository {
     create(data: CreateUserData): Promise<UserRecord>;
-    findByEmail(email: string): Promise<UserRecord | null>;
+    findByEmail(email: Email): Promise<UserRecord | null>;
 }

@@ -1,4 +1,5 @@
 import { CreateUserData, UserRecord, UserRepository } from "@/modules/auth/application/ports/user.repository";
+import { Email } from "@/modules/auth/domain/values-object/emai.vo";
 import { PrismaClient } from "@prisma/client";
 
 export class PrismaUserRepository implements UserRepository {
@@ -6,7 +7,7 @@ export class PrismaUserRepository implements UserRepository {
     async create(data: CreateUserData): Promise<UserRecord> {
         const user = await this.prisma.user.create({
             data: {
-                email: data.email,
+                email: data.email.value,
                 password: data.password,
                 firstName: data.firstName,
                 lastName: data.lastName,
@@ -26,8 +27,8 @@ export class PrismaUserRepository implements UserRepository {
             updatedAt: user.updatedAt,
         };
     }
-    async findByEmail(email: string): Promise<UserRecord | null> {
-        const user = await this.prisma.user.findUnique({ where: { email } });
+    async findByEmail(email: Email): Promise<UserRecord | null> {
+        const user = await this.prisma.user.findUnique({ where: { email: email.value } });
 
         if (!user) return null;
 

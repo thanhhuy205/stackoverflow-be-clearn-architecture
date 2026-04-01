@@ -1,6 +1,7 @@
 import { RegisterInput } from "@/modules/auth/application/dto/register.input";
 import { PasswordHasher } from "@/modules/auth/application/ports/password-hasher";
 import { UserRepository } from "@/modules/auth/application/ports/user.repository";
+import { Email } from "@/modules/auth/domain/values-object/emai.vo";
 
 
 export type RegisterOutput = {
@@ -19,16 +20,11 @@ export class RegisterUseCase {
         private readonly passwordHasher: PasswordHasher
     ) { }
     async execute(input: RegisterInput): Promise<RegisterOutput> {
-        const email = input.email.trim().toLowerCase();
+        const email = Email.create(input.email);
         const firstName = input.firstName.trim();
         const lastName = input.lastName.trim();
         const password = input.password;
         const confirmPassword = input.confirmPassword;
-
-
-        if (!email) {
-            throw new Error('Email is required');
-        }
 
         if (!firstName) {
             throw new Error('firstName is required');
@@ -54,7 +50,7 @@ export class RegisterUseCase {
         const passwordHash = await this.passwordHasher.hash(password);
 
         const user = await this.userRepository.create({
-            email,
+            email: email,
             firstName, lastName, password: passwordHash
         })
         return {
