@@ -6,11 +6,13 @@ export type CreateUserData = {
 }
 
 export type UserRecord = {
-    id: string;
+    id: number;
+    bio: string;
+    avatar: string;
     email: string;
     firstName: string;
     lastName: string;
-    passwordHash: string;
+    password: string;
     createdAt: Date;
     updatedAt: Date;
 }

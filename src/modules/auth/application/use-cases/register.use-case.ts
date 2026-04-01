@@ -4,7 +4,7 @@ import { UserRepository } from "@/modules/auth/application/ports/user.repository
 
 
 export type RegisterOutput = {
-    id: string;
+    id: number;
     email: string;
     firstName: string;
     lastName: string;
@@ -21,6 +21,8 @@ export class RegisterUseCase {
         const firstName = input.firstName.trim();
         const lastName = input.lastName.trim();
         const password = input.password;
+        const confirmPassword = input.confirmPassword;
+
 
         if (!email) {
             throw new Error('Email is required');
@@ -31,11 +33,15 @@ export class RegisterUseCase {
         }
 
         if (!lastName) {
-            throw new Error('firstName is required');
+            throw new Error('lastName is required');
         }
 
         if (!password || password.length < 6) {
             throw new Error('Password must be at least 6 characters');
+        }
+
+        if (password != confirmPassword) {
+            throw new Error('Password must equal confirmPassword');
         }
 
         const existingUser = await this.userRepository.findByEmail(email);
