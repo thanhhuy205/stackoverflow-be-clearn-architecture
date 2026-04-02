@@ -8,6 +8,7 @@ import { PrismaClient, RefreshToken } from "@prisma/client";
 
 export class PrismaRefreshSessionRepository implements RefreshTokenRepository {
     constructor(private readonly prisma: PrismaClient) { }
+    
 
     async create(data: CreateRefreshTokenData): Promise<RefreshTokenRecord> {
         const refreshToken = await this.prisma.refreshToken.create({
@@ -56,6 +57,16 @@ export class PrismaRefreshSessionRepository implements RefreshTokenRepository {
     async revokeBySessionId(sessionId: string): Promise<void> {
         await this.prisma.refreshToken.updateMany({
             where: { sessionId, revoked: false },
+            data: {
+                revoked: true,
+                revokedAt: new Date(),
+            },
+        });
+    }
+
+    async revokeByRefreshToken(refreshToken: string): Promise<void> {
+        await this.prisma.refreshToken.updateMany({
+            where: { hashToken: refreshToken, revoked: false },
             data: {
                 revoked: true,
                 revokedAt: new Date(),

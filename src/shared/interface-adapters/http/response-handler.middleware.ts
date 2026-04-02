@@ -12,8 +12,8 @@ export const responseMiddleware = (
     ) {
         return res.status(status).json({
             success: true,
-            data,
             ...(message && { message }),
+            data,
         });
     };
 
@@ -29,8 +29,8 @@ export const responseMiddleware = (
 
         return res.status(status).json({
             success: false,
-            error: errorMessage,
             ...(message && { message }),
+            error: errorMessage,
         });
     };
 

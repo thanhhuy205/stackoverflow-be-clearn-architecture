@@ -46,7 +46,6 @@ export class RegisterUseCase {
     ) { }
 
     async execute(input: RegisterInput): Promise<RegisterOutput> {
-        console.log(input);
         const email = Email.create(input.email);
         const firstName = input.firstName.trim();
         const lastName = input.lastName.trim();
@@ -78,7 +77,6 @@ export class RegisterUseCase {
             lastName,
             password: passwordHash,
         });
-        console.log(user);
         const sessionId = this.refreshTokenHasher.generateSession();
 
         const [accessToken, refreshToken] = await Promise.all([

@@ -27,4 +27,5 @@ export interface RefreshTokenRepository {
     create(data: CreateRefreshTokenData): Promise<RefreshTokenRecord>;
     findByTokenHash(hashToken: string): Promise<RefreshTokenWithUser | null>;
     revokeBySessionId(sessionId: string): Promise<void>;
+    revokeByRefreshToken(refreshToken: string): Promise<void>;
 }

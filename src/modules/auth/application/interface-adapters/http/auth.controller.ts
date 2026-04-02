@@ -1,5 +1,6 @@
 import { AuthPresenter } from "@/modules/auth/application/interface-adapters/presenters/auth.presenter";
 import { LoginUseCase } from "@/modules/auth/application/use-cases/login.use-case";
+import { LogoutUseCase } from "@/modules/auth/application/use-cases/logout.use-case";
 import { RefreshTokenUseCase } from "@/modules/auth/application/use-cases/refresh-token.use-case";
 import { RegisterUseCase } from "@/modules/auth/application/use-cases/register.use-case";
 import { Request, Response } from "express";
@@ -8,6 +9,7 @@ export class AuthController {
     constructor(private readonly registerUseCase: RegisterUseCase,
         private readonly loginUseCase: LoginUseCase,
         private readonly refreshTokenUseCase: RefreshTokenUseCase,
+        private readonly logoutUseCase: LogoutUseCase,
         private readonly authPresenter: AuthPresenter
     ) {
     }
@@ -45,5 +47,14 @@ export class AuthController {
         const data = this.authPresenter.presentRefreshToken(output);
 
         return res.success(data, 200, "Refresh token successfully");
+    }
+
+
+    logout = async (req: Request, res: Response) => {
+        const output = await this.logoutUseCase.execute({
+            accessToken: req.body.accessToken,
+            refreshToken: req.body.refreshToken,
+        });
+        return res.success(null, 200, "Logout successfully");
     }
 }

@@ -77,6 +77,7 @@ export class PrismaUserRepository implements UserRepository {
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
             lastLoginAt: user.lastLoginAt,
+
             roles: user.userRoles.map((x) => x.role.code),
         };
     }

@@ -7,5 +7,6 @@ export const createAuthRoutes = (authController: AuthController) => {
     router.post('/register', authController.register);
     router.post('/login', authController.login);
     router.post('/refresh-token', requireRefreshTokenMiddleware, authController.refreshToken);
+    router.post('/logout', requireRefreshTokenMiddleware, authController.logout);
     return router;
 }
