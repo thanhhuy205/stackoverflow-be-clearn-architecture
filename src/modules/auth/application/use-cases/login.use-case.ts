@@ -5,8 +5,8 @@ import { RefreshTokenRepository } from "@/modules/auth/application/ports/refresh
 import { TokenService } from "@/modules/auth/application/ports/token-service";
 import { UserRepository } from "@/modules/auth/application/ports/user.repository";
 import { InvalidCredentialsError } from "@/modules/auth/domain/errors/invalid-credentials.error";
-import { RefreshTokenExpirationPolicy } from "@/modules/auth/domain/services/refresh-token-expiration.policy";
 import { UserNotFoundError } from "@/modules/auth/domain/errors/user-not-found.error";
+import { RefreshTokenExpirationPolicy } from "@/modules/auth/domain/services/refresh-token-expiration.policy";
 import { Email } from "@/modules/auth/domain/values-object/email.vo";
 import { Password } from "@/modules/auth/domain/values-object/password.vo";
 
@@ -56,7 +56,7 @@ export class LoginUseCase {
         const sessionId = this.refreshTokenHasher.generateSession();
 
         const [accessToken, refreshToken] = await Promise.all([
-            this.tokenService.signAccessToken({ userId: user.id, role: user.role, sessionId }),
+            this.tokenService.signAccessToken({ userId: user.id, role: user.roles, sessionId }),
             this.tokenService.signRefreshToken(),
         ]);
 
