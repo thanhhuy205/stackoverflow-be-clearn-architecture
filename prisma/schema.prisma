@@ -99,6 +99,8 @@ model Question {
 
   userId  Int    @map("user_id")
   content String @db.Text
+  title   String @db.VarChar(255)
+  slug   String @unique @db.VarChar(255)
 
   answersCount  Int @default(0) @map("answers_count")
 
@@ -111,10 +113,33 @@ model Question {
   user     User      @relation(fields: [userId], references: [id])
   answers  Answer[]
   comments Comment[]
+  questionTags QuestionTag[]
 
   @@index([userId, createdAt], map: "idx_questions_user_created_at")
   @@index([createdAt], map: "idx_questions_created_at")
   @@map("questions")
+}
+
+model Tag {
+  id   Int    @id @default(autoincrement())
+  name String @unique @db.VarChar(100)
+
+  questionTags QuestionTag[]
+
+  @@map("tags")
+}
+
+
+model QuestionTag {
+  questionId Int @map("question_id")
+  tagId      Int @map("tag_id")
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  tag      Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([questionId, tagId])
+  @@index([tagId], map: "idx_question_tags_tag_id")
+  @@map("question_tags")
 }
 
 model Answer {
