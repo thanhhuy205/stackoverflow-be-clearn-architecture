@@ -1,3 +1,4 @@
+import { config } from "@/config";
 import { BcryptHasherToken } from "@/modules/auth/application/infrastructure/crypto/bcrypt-hasher-token";
 import { BcryptPasswordHasher } from "@/modules/auth/application/infrastructure/crypto/bcrypt-password-hasher";
 import { PrismaRefreshSessionRepository } from "@/modules/auth/application/infrastructure/persistence/prisma-refresh-session.repository";
@@ -8,26 +9,38 @@ import { AuthPresenter } from "@/modules/auth/application/interface-adapters/pre
 import { LoginUseCase } from "@/modules/auth/application/use-cases/login.use-case";
 import { RefreshTokenUseCase } from "@/modules/auth/application/use-cases/refresh-token.use-case";
 import { RegisterUseCase } from "@/modules/auth/application/use-cases/register.use-case";
+import { RefreshTokenExpirationPolicy } from "@/modules/auth/domain/services/refresh-token-expiration.policy";
 import { prisma } from "@/shared/infrastructure/prisma/prisma.client";
 
 export const buildContainer = () => {
-    const refreshTokenFixedSalt = process.env.REFRESH_TOKEN_FIXED_SALT;
-    if (!refreshTokenFixedSalt) {
-        throw new Error("REFRESH_TOKEN_FIXED_SALT is required.");
-    }
-
     const userRepository = new PrismaUserRepository(prisma);
     const refreshTokenRepository = new PrismaRefreshSessionRepository(prisma);
     const passwordHasher = new BcryptPasswordHasher(10);
-    const refreshTokenHasher = new BcryptHasherToken(refreshTokenFixedSalt);
-    const tokenService = new JwtTokenService('ok');
+    const refreshTokenHasher = new BcryptHasherToken(config.auth.refreshTokenFixedSalt);
+    const tokenService = new JwtTokenService(config.auth.accessTokenSecret);
+    const refreshTokenExpirationPolicy = new RefreshTokenExpirationPolicy(config.auth.refreshTokenTtlInDays);
 
-    const registerUseCase = new RegisterUseCase(userRepository, passwordHasher);
-    const loginUserCase = new LoginUseCase(userRepository, passwordHasher, tokenService);
+    const registerUseCase = new RegisterUseCase(
+        userRepository,
+        passwordHasher,
+        refreshTokenHasher,
+        tokenService,
+        refreshTokenRepository,
+        refreshTokenExpirationPolicy,
+    );
+    const loginUserCase = new LoginUseCase(
+        userRepository,
+        passwordHasher,
+        refreshTokenHasher,
+        tokenService,
+        refreshTokenRepository,
+        refreshTokenExpirationPolicy,
+    );
     const refreshTokenUseCase = new RefreshTokenUseCase(
         refreshTokenRepository,
         refreshTokenHasher,
         tokenService,
+        refreshTokenExpirationPolicy,
     );
 
     const authPresenter = new AuthPresenter();

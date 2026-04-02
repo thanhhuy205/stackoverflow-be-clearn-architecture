@@ -10,7 +10,7 @@ import { RefreshSessionEntity } from "@/modules/auth/domain/entities/refresh-ses
 import { RefreshTokenExpiredError } from "@/modules/auth/domain/errors/refresh-token-expired.error";
 import { RefreshTokenNotFoundError } from "@/modules/auth/domain/errors/refresh-token-not-found.error";
 import { RefreshTokenRevokedError } from "@/modules/auth/domain/errors/refresh-token-revoked.error";
-import crypto from "crypto";
+import { RefreshTokenExpirationPolicy } from "@/modules/auth/domain/services/refresh-token-expiration.policy";
 
 export type RefreshTokenOutput = {
     userId: number;
@@ -60,6 +60,7 @@ export class RefreshTokenUseCase {
         private readonly refreshTokenRepository: RefreshTokenRepository,
         private readonly refreshTokenHasher: RefreshTokenHasher,
         private readonly tokenService: TokenService,
+        private readonly refreshTokenExpirationPolicy: RefreshTokenExpirationPolicy,
     ) { }
 
     async execute(input: RefreshTokenInput): Promise<RefreshTokenUseCaseOutput> {
@@ -85,10 +86,10 @@ export class RefreshTokenUseCase {
         await this.refreshTokenRepository.revokeBySessionId(oldSession.sessionId);
 
         const nextRefreshToken = await this.tokenService.signRefreshToken();
-        const nextSessionId = crypto.randomUUID();
+        const nextSessionId = this.refreshTokenHasher.generateSession();
 
         const nextHashToken = await this.refreshTokenHasher.hash(nextRefreshToken);
-        const nextExpiresAt = this.buildRefreshTokenExpiresAt(new Date());
+        const nextExpiresAt = this.refreshTokenExpirationPolicy.buildExpiresAt(new Date());
 
         const createData: CreateRefreshTokenData = {
             userId: oldSession.userId,
@@ -110,12 +111,6 @@ export class RefreshTokenUseCase {
             refreshToken: nextRefreshToken,
             session: this.toOutput(nextSessionRecord),
         };
-    }
-
-    private buildRefreshTokenExpiresAt(now: Date): Date {
-        const expiresAt = new Date(now);
-        expiresAt.setDate(expiresAt.getDate() + 7);
-        return expiresAt;
     }
 
     private toOutput(record: RefreshTokenRecord): RefreshTokenOutput {
